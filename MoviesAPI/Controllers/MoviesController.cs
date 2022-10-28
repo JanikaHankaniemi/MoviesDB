@@ -60,11 +60,11 @@ namespace MoviesAPI.Controllers
             }
         }
 
-        [HttpPost("Find")]
+        [HttpPost("Search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> FindMovie(SearchTerms searchTerm)
+        public async Task<IActionResult> SearchMovies(SearchTerms searchTerm)
         {
             try
             {
@@ -77,7 +77,7 @@ namespace MoviesAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occurred when finding movies");
+                _logger.LogError(ex, "Error occurred when finding movies");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error occurred" });
             }
         }
@@ -91,8 +91,8 @@ namespace MoviesAPI.Controllers
         {
             try
             {
-                await _movieService.CreateAsync(newMovie);
-                return Ok(newMovie);
+                var updatedMovie = await _movieService.CreateAsync(newMovie);
+                return Ok(updatedMovie);
             }
             catch (ArgumentException ex)
             {
@@ -100,7 +100,7 @@ namespace MoviesAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occurred when adding movie");
+                _logger.LogError(ex, "Error occurred when adding movie");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error occurred" });
             }
         }

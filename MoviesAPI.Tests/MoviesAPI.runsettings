@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<RunSettings>
+	<RunConfiguration>
+		<TestSessionTimeout>10000</TestSessionTimeout>
+	</RunConfiguration>
+  <TestRunParameters>
+	  <Parameter name="ConnectionString" value="mongodb://localhost:27017" />
+	  <Parameter name="DatabaseName" value="MovieTestDB" />
+	  <Parameter name="CollectionName" value="Movies" />
+	  <Parameter name="PathToJSONData" value="C:\\Users\\ett15375\\Downloads\\movies-compact (12).json" />
+  </TestRunParameters>
+</RunSettings>
