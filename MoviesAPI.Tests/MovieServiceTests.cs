@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using Newtonsoft.Json;
 using Moq;
 using MoviesAPI.Models;
 using MoviesAPI.Services;
@@ -91,7 +92,9 @@ namespace MoviesAPI.Tests
                 TestContext.WriteLine(ex.Message);
             }
             Assert.IsNotNull(getResult);
-            Assert.AreEqual(newMovie?.name, getResult.name);
+            var getResultJson = JsonConvert.SerializeObject(getResult);
+            var newMovieJson = JsonConvert.SerializeObject(newMovie);
+            Assert.AreEqual(getResultJson, newMovieJson);
         }
         [TestMethod]
         public async Task FindMovie()
