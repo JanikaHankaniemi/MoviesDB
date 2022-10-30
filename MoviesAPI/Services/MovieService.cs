@@ -64,7 +64,7 @@ public class MovieService
         }
         if(searchTerms.AgeLimit != null)
         {
-            filter &= Builders<Movie>.Filter.Where(movie => movie.ageLimit == searchTerms.AgeLimit);
+            filter &= Builders<Movie>.Filter.Where(movie => movie.ageLimit <= searchTerms.AgeLimit);
         }
         if (searchTerms.Year != null)
         {
