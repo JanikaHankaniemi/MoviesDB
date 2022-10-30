@@ -12,5 +12,7 @@ namespace MoviesAPI.Models
         public string? Genre { get; set; }
         public int? AgeLimit { get; set; }  
         public int? Rating { get; set; } 
+        public int? NbrOfEntries { get; set; }
+        public int? Skip { get; set; }
     }
 }

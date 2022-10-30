@@ -60,7 +60,7 @@ namespace MoviesAPI.Tests
         [TestMethod]
         public async Task GetMovies()
         {
-            var movies = await _movieService.GetAsync();
+            var movies = await _movieService.GetAsync(null, null);
             Assert.IsNotNull(movies);            
         }
         [TestMethod]
@@ -103,10 +103,12 @@ namespace MoviesAPI.Tests
             try
             {
                 _ = await _movieService.CreateAsync(testMovie);
-                searchResult = await _movieService.FindAsync(new SearchTerms
+                searchResult = await _movieService.SearchAsync(new SearchTerms
                 {
                     FreeText = testMovie.name
-                });
+                }, 
+                null, 
+                null);
             }
             catch (Exception ex)
             {
@@ -114,6 +116,7 @@ namespace MoviesAPI.Tests
             }
             Assert.IsNotNull(searchResult);
             Assert.IsTrue(searchResult?.Count > 0);
+            await _movieService.RemoveAsync(testMovie._id.ToString());
         }
         [TestMethod]
         public async Task RemoveMovie()

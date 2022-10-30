@@ -20,14 +20,21 @@ namespace MoviesAPI.Controllers
             _movieService = movieService;
         }
 
+        // GET api/Movies/
+        /// <summary>
+        /// Fetches movies from DB
+        /// </summary>
+        /// <param name="nbrOfEntries">Number of entries to return</param>
+        /// <param name="skip">Skip number of entries from collection</param>
+        /// <returns>List of movies</returns>
         [HttpGet()]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMovies()
+        public async Task<IActionResult> GetMovies(int? nbrOfEntries, int? skip)
         {
             try
             {
-                var movies = await _movieService.GetAsync();
+                var movies = await _movieService.GetAsync(nbrOfEntries, skip);
                 return Ok(movies);
             }
             catch (Exception ex)
@@ -38,12 +45,19 @@ namespace MoviesAPI.Controllers
 
         }
 
+        // GET api/Movies/635bbf32bd4bd86899e1f02f
+        /// <summary>
+        /// Fetches movie with ID from DB
+        /// </summary>
+        /// <param name="id">Id of the movie</param>
+        /// <returns>Movie</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMovie(string id)
         {
+            if (id == null) { return BadRequest("No id provided"); }
             try
             {
                 var movie = await _movieService.GetAsync(id);
@@ -60,15 +74,48 @@ namespace MoviesAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Fetches movies from DB matching the searchTerm object
+        /// </summary>
+        /// <param name="searchTerm">searchTerm object</param>
+        /// <returns>Movies</returns>
         [HttpPost("Search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SearchMovies(SearchTerms searchTerm)
+        public async Task<IActionResult> SearchMovies(
+            string? FreeText,
+            string? Person,
+            string? Genre,
+            int? AgeLimit,
+            int? Year,
+            int? Rating,
+            int? Skip, 
+            int? NbrOfEntries
+            )
         {
+            SearchTerms searchTerms = new()
+            {
+                FreeText = FreeText,
+                Person = Person,
+                Genre = Genre,
+                AgeLimit = AgeLimit,
+                Year = Year,
+                Rating = Rating,
+                Skip = Skip,
+                NbrOfEntries = NbrOfEntries
+            };
             try
             {
-                var movies = await _movieService.FindAsync(searchTerm);
+                IList<Movie> movies;
+                if (searchTerms == null)
+                {
+                    movies = await _movieService.GetAsync(null, null);
+                }
+                else
+                {
+                    movies = await _movieService.SearchAsync(searchTerms);
+                }
                 return Ok(movies);
             }
             catch (ArgumentException ex)
@@ -82,13 +129,20 @@ namespace MoviesAPI.Controllers
             }
         }
 
-
+        //POST api/Movies
+        /// <summary>
+        /// Add a movies to the collection
+        /// </summary>
+        /// <param name="newMovie">Movie type object</param>
+        /// <returns>Added movie entry</returns>
         [HttpPost(Name = "AddMovie")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddMovie(Movie newMovie)
         {
+            if(newMovie == null) { return BadRequest("Movie not defined"); }
+
             try
             {
                 var updatedMovie = await _movieService.CreateAsync(newMovie);

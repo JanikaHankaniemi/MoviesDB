@@ -31,13 +31,14 @@ public class MovieService
         _logger = logger;
     }
 
-    public async Task<List<Movie>> GetAsync() =>
-        await _movieCollection.Find(movie => true).ToListAsync();
-
+    public async Task<List<Movie>> GetAsync(int? nbrOfEntries, int? skip)
+    {
+        return await _movieCollection.Find(movie => true).Skip(skip).Limit(nbrOfEntries).ToListAsync();
+    }
     public async Task<Movie?> GetAsync(string id) =>
         await _movieCollection.Find(movie => movie._id == new ObjectId(id)).FirstOrDefaultAsync();
 
-    public async Task<List<Movie>> FindAsync(SearchTerms searchTerms)
+    public async Task<List<Movie>> SearchAsync(SearchTerms searchTerms)
     {
         var results = new List<Movie>();
         var filter = Builders<Movie>.Filter.Empty;
@@ -48,15 +49,13 @@ public class MovieService
                 movie.name.ToUpper().Contains(filterTerm) ||
                 movie.synopsis.ToUpper().Contains(filterTerm));
         }
-        if (searchTerms.Person != null) { 
+        if (searchTerms.Person != null) {
             filter &= Builders<Movie>.Filter.Or(
-                Builders<Movie>.Filter.Where(movie =>
-                    movie.actors != null && movie.actors.Any(
-                    actor => actor.firstName.ToUpper().Contains(searchTerms.Person) ||
-                    actor.lastName.ToUpper().Contains(searchTerms.Person))),
-                Builders<Movie>.Filter.Where(movie =>
-                    movie.director.firstName.ToUpper().Contains(searchTerms.Person) ||
-                    movie.director.lastName.ToUpper().Contains(searchTerms.Person)));
+                    Builders<Movie>.Filter.Where(movie =>
+                        movie.actors != null && movie.actors.Any(
+                        actor => actor.fullName.ToUpper().Contains(searchTerms.Person))),
+                    Builders<Movie>.Filter.Where(movie =>
+                        movie.director != null && movie.director.fullName.ToUpper().Contains(searchTerms.Person)));
         }
         if(searchTerms.Genre != null)
         {
@@ -74,12 +73,13 @@ public class MovieService
         {
             filter &= Builders<Movie>.Filter.Where(movie => movie.rating == searchTerms.Rating);
         }
-        results = await _movieCollection.Find(filter).ToListAsync();
+        results = await _movieCollection.Find(filter).Skip(searchTerms.Skip).Limit(searchTerms.NbrOfEntries).ToListAsync();
         return results;
     }
 
     public async Task<Movie> CreateAsync(Movie newMovie)
     {
+        AddFullNames(newMovie);
         await _movieCollection.InsertOneAsync(newMovie);
         return newMovie;
         
@@ -110,7 +110,10 @@ public class MovieService
                 string fileName = _configuration.GetValue<string>("PathToJSONData");
                 string jsonString = await File.ReadAllTextAsync(fileName);
                 List<Movie> movies = JsonSerializer.Deserialize<List<Movie>>(jsonString)!;
-                movies.ForEach(async movie => await CreateAsync(movie));
+                movies.ForEach(async movie => {
+                    AddFullNames(movie);
+                    await CreateAsync(movie); 
+                });
                 var indexBuilder = Builders<Movie>.IndexKeys;
                 var indexModel = new CreateIndexModel<Movie>(indexBuilder.Text(x => x.name));
                 await _movieCollection.Indexes.CreateOneAsync(indexModel);
@@ -120,5 +123,15 @@ public class MovieService
                 _logger.LogError(ex, "Could not seed db");
             }
         }
+    }
+    private static void AddFullNames(Movie movie)
+    {
+        movie.actors = movie.actors.Select(actor => new Person()
+        {
+            firstName = actor.firstName,
+            lastName = actor.lastName,
+            fullName = $"{actor.firstName} {actor.lastName}"
+        }).ToList();
+        movie.director.fullName = $"{movie.director.firstName} {movie.director.lastName}";
     }
 }
