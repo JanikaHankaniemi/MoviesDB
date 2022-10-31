@@ -18,7 +18,7 @@ OR
 In cmd, PowerShell or other terminal:
 
 ```ps
-cd <your git folder>MoviesAPI
+cd <your git folder>\MoviesAPI
 dotnet run
 ```
 
