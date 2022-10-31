@@ -16,5 +16,6 @@ namespace MoviesAPI.Models
         public List<Person> actors { get; set; } = null!;
         public Person director { get; set; } = null!;
         public string synopsis { get; set; } = null!;
+        public string aggregate { get; set; } = null!;
     }
 }

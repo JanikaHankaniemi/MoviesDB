@@ -45,6 +45,31 @@ namespace MoviesAPI.Controllers
 
         }
 
+        // GET api/Movies/Genres
+        /// <summary>
+        /// Fetches genres from DB
+        /// </summary>
+        /// <param name="nbrOfEntries">Number of entries to return</param>
+        /// <param name="skip">Skip number of entries from collection</param>
+        /// <returns>List of movies</returns>
+        [HttpGet("Genres")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetGenres()
+        {
+            try
+            {
+                var genres = await _movieService.GetGenresAsync();
+                return Ok(genres);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred when fetching genres");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error occurred" });
+            }
+
+        }
+
         // GET api/Movies/635bbf32bd4bd86899e1f02f
         /// <summary>
         /// Fetches movie with ID from DB
@@ -79,7 +104,7 @@ namespace MoviesAPI.Controllers
         /// </summary>
         /// <param name="searchTerm">searchTerm object</param>
         /// <returns>Movies</returns>
-        [HttpPost("Search")]
+        [HttpGet("Search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

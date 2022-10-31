@@ -106,9 +106,7 @@ namespace MoviesAPI.Tests
                 searchResult = await _movieService.SearchAsync(new SearchTerms
                 {
                     FreeText = testMovie.name
-                }, 
-                null, 
-                null);
+                });
             }
             catch (Exception ex)
             {

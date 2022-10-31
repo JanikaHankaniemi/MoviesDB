@@ -9,15 +9,16 @@ namespace MoviesAPI.Services;
 public class MovieService
 {
     private readonly IMongoCollection<Movie> _movieCollection;
+    private readonly IMongoCollection<Genre> _genreCollection;
     private readonly IMongoDatabase _database;
     private readonly IConfiguration _configuration;
     private readonly ILogger<MovieService> _logger;
-
+    private readonly string _genreCollectionName = "Genres";
     public MovieService(
         IOptions<MongoDBSettings> mongoDBSettings,
-        IConfiguration configuration, 
+        IConfiguration configuration,
         ILogger<MovieService> logger)
-    {   
+    {
         var mongoClient = new MongoClient(
             mongoDBSettings.Value.ConnectionString);
 
@@ -27,6 +28,7 @@ public class MovieService
         _movieCollection = _database.GetCollection<Movie>(
             mongoDBSettings.Value.CollectionName);
 
+        _genreCollection = _database.GetCollection<Genre>(_genreCollectionName);
         _configuration = configuration;
         _logger = logger;
     }
@@ -34,6 +36,11 @@ public class MovieService
     public async Task<List<Movie>> GetAsync(int? nbrOfEntries, int? skip)
     {
         return await _movieCollection.Find(movie => true).Skip(skip).Limit(nbrOfEntries).ToListAsync();
+    }
+
+    public async Task<List<Genre>> GetGenresAsync()
+    {
+        return await _genreCollection.Find(genre => true).ToListAsync();
     }
     public async Task<Movie?> GetAsync(string id) =>
         await _movieCollection.Find(movie => movie._id == new ObjectId(id)).FirstOrDefaultAsync();
@@ -46,22 +53,13 @@ public class MovieService
         {
             var filterTerm = searchTerms.FreeText.ToUpper();
             filter &= Builders<Movie>.Filter.Where(movie =>
-                movie.name.ToUpper().Contains(filterTerm) ||
-                movie.synopsis.ToUpper().Contains(filterTerm));
+                movie.aggregate.ToUpper().Contains(filterTerm));
         }
-        if (searchTerms.Person != null) {
-            filter &= Builders<Movie>.Filter.Or(
-                    Builders<Movie>.Filter.Where(movie =>
-                        movie.actors != null && movie.actors.Any(
-                        actor => actor.fullName.ToUpper().Contains(searchTerms.Person))),
-                    Builders<Movie>.Filter.Where(movie =>
-                        movie.director != null && movie.director.fullName.ToUpper().Contains(searchTerms.Person)));
-        }
-        if(searchTerms.Genre != null)
+        if (searchTerms.Genre != null)
         {
             filter &= Builders<Movie>.Filter.Where(movie => movie.genres.Any(genre => genre == searchTerms.Genre));
         }
-        if(searchTerms.AgeLimit != null)
+        if (searchTerms.AgeLimit != null)
         {
             filter &= Builders<Movie>.Filter.Where(movie => movie.ageLimit <= searchTerms.AgeLimit);
         }
@@ -79,10 +77,10 @@ public class MovieService
 
     public async Task<Movie> CreateAsync(Movie newMovie)
     {
-        AddFullNames(newMovie);
+        AddAggregate(newMovie);
+        await UpdateGenres(newMovie);
         await _movieCollection.InsertOneAsync(newMovie);
         return newMovie;
-        
     }
     public async Task UpdateAsync(string id, Movie updatedMovie) =>
         await _movieCollection.ReplaceOneAsync(movie => movie._id == new ObjectId(id), updatedMovie);
@@ -93,6 +91,7 @@ public class MovieService
     public async Task DropCollection()
     {
         await _database.DropCollectionAsync("Movies");
+        await _database.DropCollectionAsync("Genres");
     }
     public async Task SeedDB()
     {
@@ -110,9 +109,10 @@ public class MovieService
                 string fileName = _configuration.GetValue<string>("PathToJSONData");
                 string jsonString = await File.ReadAllTextAsync(fileName);
                 List<Movie> movies = JsonSerializer.Deserialize<List<Movie>>(jsonString)!;
-                movies.ForEach(async movie => {
-                    AddFullNames(movie);
-                    await CreateAsync(movie); 
+                movies.ForEach(async movie =>
+                {
+                    AddAggregate(movie);
+                    await CreateAsync(movie);
                 });
                 var indexBuilder = Builders<Movie>.IndexKeys;
                 var indexModel = new CreateIndexModel<Movie>(indexBuilder.Text(x => x.name));
@@ -121,17 +121,29 @@ public class MovieService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Could not seed db");
+                throw new Exception("Could not seed db");
             }
         }
     }
-    private static void AddFullNames(Movie movie)
+    private async Task UpdateGenres(Movie movie)
     {
-        movie.actors = movie.actors.Select(actor => new Person()
+
+        for (int i = 0; i < movie.genres.Count; i++)
         {
-            firstName = actor.firstName,
-            lastName = actor.lastName,
-            fullName = $"{actor.firstName} {actor.lastName}"
-        }).ToList();
-        movie.director.fullName = $"{movie.director.firstName} {movie.director.lastName}";
+            var genre = movie.genres[i];
+            var result = _genreCollection.Find(genreEntity => genreEntity.name == genre).Any();
+            if (result == false)
+            {
+                await _genreCollection.InsertOneAsync(new Genre() { name = genre });
+            }
+        }
+    }
+    private static void AddAggregate(Movie movie)
+    {
+        movie.aggregate = $"{movie.name} {movie.synopsis} {movie.director.firstName} {movie.director.lastName}";
+        movie.actors.ForEach(actor =>
+        {
+            movie.aggregate += $" {actor.firstName} {actor.lastName}";
+        });
     }
 }

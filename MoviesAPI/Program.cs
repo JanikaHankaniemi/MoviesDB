@@ -1,9 +1,20 @@
 using MoviesAPI.Models;
 using MoviesAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
+var policyName = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: policyName,
+                      builder =>
+                      {
+                          builder
+                            .WithOrigins("http://localhost:3000")
+                            .WithMethods("GET, POST, DELETE")
+                            .AllowAnyHeader();
+                      });
+});
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -23,9 +34,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
+app.UseCors(policyName);
 app.MapControllers();
 
 #region Seed initial database data
