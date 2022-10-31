@@ -3,6 +3,19 @@
 - VisualStudio (development done in VS 2022)
 - MongoDB instance
 
+## Environment variables
+All variables are defined in appsettings.json:
+```ps
+"MongoDBSettings": {
+    "ConnectionString": "<connection string to your MongoDB instance>",
+    "DatabaseName": "<database name>",
+    "CollectionName": "<movie collection name>"
+  },
+  "PathToJSONData": "<pathToYourDataJson>\<yourJsonFile>.json"
+}
+```
+Modify these to match your environment.
+
 ## How to start the API
 
 Debug > Start Debugging  
