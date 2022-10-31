@@ -22,6 +22,18 @@ cd <your git folder>\MoviesAPI
 dotnet run
 ```
 
+By default the server will run under
+```ps
+https://localhost:7108
+http://localhost:5108
+```
+
+## CORS
+The server allows (GET, POST, DELETE) HTTP requests from http://localhost:3000 and all requests from Swagger
+
+## Swagger
+Swagger instance is automatically started with the server
+
 ## Branching
 Only one branch used (main).
 
