@@ -1,5 +1,5 @@
 # MoviesDB
-##Needed tools:
+## Needed tools:
 VisualStudio (development done in VS 2022)
 MongoDB instance
 
@@ -22,9 +22,9 @@ cd <your git folder>MoviesAPI
 dotnet run
 ```
 
-##Branching
+## Branching
 Only one branch used (main).
 
-##Authorization
+## Authorization
 No authorization method implemented
 
