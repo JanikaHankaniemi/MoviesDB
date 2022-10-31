@@ -1,7 +1,7 @@
 # MoviesDB
 ## Needed tools:
-VisualStudio (development done in VS 2022)
-MongoDB instance
+- VisualStudio (development done in VS 2022)
+- MongoDB instance
 
 ## How to start the API
 
