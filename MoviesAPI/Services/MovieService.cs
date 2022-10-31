@@ -75,12 +75,11 @@ public class MovieService
         return results;
     }
 
-    public async Task<Movie> CreateAsync(Movie newMovie)
+    public async Task<Movie> CreateAsync(Movie movie)
     {
-        AddAggregate(newMovie);
-        await UpdateGenres(newMovie);
-        await _movieCollection.InsertOneAsync(newMovie);
-        return newMovie;
+        await UpdateGenres(movie);
+        await _movieCollection.InsertOneAsync(movie);
+        return movie;
     }
     public async Task UpdateAsync(string id, Movie updatedMovie) =>
         await _movieCollection.ReplaceOneAsync(movie => movie._id == new ObjectId(id), updatedMovie);
@@ -108,11 +107,10 @@ public class MovieService
             {
                 string fileName = _configuration.GetValue<string>("PathToJSONData");
                 string jsonString = await File.ReadAllTextAsync(fileName);
-                List<Movie> movies = JsonSerializer.Deserialize<List<Movie>>(jsonString)!;
-                movies.ForEach(async movie =>
+                List<MovieJson> movies = JsonSerializer.Deserialize<List<MovieJson>>(jsonString)!;
+                movies.ForEach(async movieJson =>
                 {
-                    AddAggregate(movie);
-                    await CreateAsync(movie);
+                    await CreateAsync(MapJsonToMovie(movieJson));
                 });
                 var indexBuilder = Builders<Movie>.IndexKeys;
                 var indexModel = new CreateIndexModel<Movie>(indexBuilder.Text(x => x.name));
@@ -124,6 +122,25 @@ public class MovieService
                 throw new Exception("Could not seed db");
             }
         }
+    }
+
+    private Movie MapJsonToMovie(MovieJson movieJson)
+    {
+        string directorstr = $"{movieJson.director.firstName} {movieJson.director.lastName}";
+        string actorstr = String.Join(", ", movieJson.actors.Select(actor => $"{actor.firstName} {actor.lastName}").ToList());
+
+        return new Movie()
+        {
+            name = movieJson.name,
+            year = movieJson.year,
+            synopsis = movieJson.synopsis,
+            rating = movieJson.rating,
+            ageLimit = movieJson.ageLimit,
+            actors = actorstr,
+            director = directorstr,
+            aggregate = $"{movieJson.name} {movieJson.synopsis} {actorstr} {directorstr}",
+            genres = movieJson.genres,
+        };
     }
     private async Task UpdateGenres(Movie movie)
     {
@@ -137,13 +154,5 @@ public class MovieService
                 await _genreCollection.InsertOneAsync(new Genre() { name = genre });
             }
         }
-    }
-    private static void AddAggregate(Movie movie)
-    {
-        movie.aggregate = $"{movie.name} {movie.synopsis} {movie.director.firstName} {movie.director.lastName}";
-        movie.actors.ForEach(actor =>
-        {
-            movie.aggregate += $" {actor.firstName} {actor.lastName}";
-        });
     }
 }

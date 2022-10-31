@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MoviesAPI.Models
 {
-    public class Movie
+    public class MovieJson
     {
         [BsonId]
         public ObjectId _id { get; set; }
@@ -13,9 +13,8 @@ namespace MoviesAPI.Models
         public List<string> genres { get; set; } = null!;
         public int ageLimit { get; set; }  
         public int rating { get; set; } 
-        public string actors { get; set; } = null!;
-        public string director { get; set; } = null!;
+        public List<Person> actors { get; set; } = null!;
+        public Person director { get; set; } = null!;
         public string synopsis { get; set; } = null!;
-        public string aggregate { get; set; } = null!;
     }
 }

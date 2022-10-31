@@ -22,11 +22,8 @@ namespace MoviesAPI.Tests
             year = 2022,
             rating = 4,
             ageLimit = 12,
-            actors = new List<Person>
-            {
-                new Person { firstName = "TestName1", lastName = "TestName2" }
-            },
-            director = new Person { firstName = "TestName 3", lastName = "TestName4" },
+            actors = "Testi Testaaja 1, Testi Testaaja 2",
+            director = "Testi Testaaja 3",
             genres = new List<string> { "Adventure" }
         };
 

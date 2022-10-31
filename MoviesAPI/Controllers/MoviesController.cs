@@ -119,7 +119,7 @@ namespace MoviesAPI.Controllers
             int? NbrOfEntries
             )
         {
-            SearchTerms searchTerms = new()
+                SearchTerms searchTerms = new()
             {
                 FreeText = FreeText,
                 Person = Person,
