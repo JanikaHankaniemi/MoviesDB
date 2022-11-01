@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
                       {
                           builder
                             .WithOrigins("http://localhost:3000")
-                            .WithMethods("GET, POST, DELETE")
+                            .AllowAnyMethod()
                             .AllowAnyHeader();
                       });
 });

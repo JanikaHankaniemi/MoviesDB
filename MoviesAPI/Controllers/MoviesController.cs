@@ -113,7 +113,7 @@ namespace MoviesAPI.Controllers
             string? Person,
             string? Genre,
             int? AgeLimit,
-            int? Year,
+            string? Year,
             int? Rating,
             int? Skip, 
             int? NbrOfEntries

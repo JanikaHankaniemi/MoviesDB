@@ -19,7 +19,7 @@ namespace MoviesAPI.Tests
         {
             name = "TestMovie",
             synopsis = "TestSynopsis",
-            year = 2022,
+            year = "2022",
             rating = 4,
             ageLimit = 12,
             actors = "Testi Testaaja 1, Testi Testaaja 2",

@@ -53,7 +53,7 @@ public class MovieService
         {
             var filterTerm = searchTerms.FreeText.ToUpper();
             filter &= Builders<Movie>.Filter.Where(movie =>
-                movie.aggregate.ToUpper().Contains(filterTerm));
+            movie.aggregate != null && movie.aggregate.ToUpper().Contains(filterTerm));
         }
         if (searchTerms.Genre != null)
         {
@@ -78,6 +78,7 @@ public class MovieService
     public async Task<Movie> CreateAsync(Movie movie)
     {
         await UpdateGenres(movie);
+        movie.aggregate = $"{movie.name} {movie.synopsis} {movie.actors} {movie.director}";
         await _movieCollection.InsertOneAsync(movie);
         return movie;
     }
@@ -132,19 +133,18 @@ public class MovieService
         return new Movie()
         {
             name = movieJson.name,
-            year = movieJson.year,
+            year = movieJson.year.ToString(),
             synopsis = movieJson.synopsis,
             rating = movieJson.rating,
             ageLimit = movieJson.ageLimit,
             actors = actorstr,
             director = directorstr,
-            aggregate = $"{movieJson.name} {movieJson.synopsis} {actorstr} {directorstr}",
             genres = movieJson.genres,
-        };
+            aggregate = $"{movieJson.name} {movieJson.synopsis} {actorstr} {directorstr}"
+    };
     }
     private async Task UpdateGenres(Movie movie)
     {
-
         for (int i = 0; i < movie.genres.Count; i++)
         {
             var genre = movie.genres[i];
