@@ -11,7 +11,7 @@ All variables are defined in appsettings.json:
     "DatabaseName": "<database name>",
     "CollectionName": "<movie collection name>"
   },
-  "PathToJSONData": "<pathToYourDataJson>\<yourJsonFile>.json"
+  "PathToJSONData": "<pathToYourDataJson>\\<yourJsonFile>.json"
 }
 ```
 Modify these to match your environment.
@@ -42,7 +42,7 @@ http://localhost:5108
 ```
 
 ## CORS
-The server allows (GET, POST, DELETE) HTTP requests from http://localhost:3000 and all requests from Swagger
+The server allows all HTTP methods with all HTTP headers from http://localhost:3000 and Swagger
 
 ## Swagger
 Swagger instance is automatically started with the server
