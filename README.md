@@ -5,7 +5,7 @@
 
 ## Environment variables
 All variables are defined in appsettings.json:
-```ps
+```
 "MongoDBSettings": {
     "ConnectionString": "<connection string to your MongoDB instance>",
     "DatabaseName": "<database name>",
@@ -30,13 +30,13 @@ OR
 
 In cmd, PowerShell or other terminal:
 
-```ps
+```
 cd <your git folder>\MoviesAPI
 dotnet run
 ```
 
 By default the server will run under
-```ps
+```
 https://localhost:7108
 http://localhost:5108
 ```
